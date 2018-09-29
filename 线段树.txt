@@ -1,0 +1,78 @@
+#include "iostream"
+#include"stdio.h"
+using namespace std;
+
+#define maxn 100007
+int Sum[maxn << 2], Add[maxn << 2];
+int a[maxn], n;
+
+void PushUp(int rt)//更新节点信息
+{
+	Sum[rt] = Sum[rt << 1] + Sum[rt<<1|1];
+}
+void Build(int l,int r,int rt)//建树 l,r表示当前节点区间，rt表示节点编号
+{
+	if (l == r)
+	{
+		Sum[rt] = a[l];
+		return;
+	}
+	int m = (l + r) >> 1;//m为l,r中间分隔的编号
+	Build(l,m,rt<<1);
+	Build(m+1,r,rt<<1|1);
+	PushUp(rt);
+}
+void Update(int L,int C,int l,int r,int rt)//单点值修改 a[L]+C
+{
+	if (l == r)
+	{
+		Sum[rt] += C;
+		return;
+	}
+	int m = (l+r) >> 1;
+	if (L <= m)
+		Update(L, C, l, m, rt << 1);
+	else
+		Update(L, C, m + 1, r, rt << 1 | 1);
+}
+void PushDown(int rt,int ln,int rn)//ln,rn为左子树和右子树的数字数目
+{
+	if (Add[rt])
+	{
+		Add[rt << 1] += Add[rt];
+		Add[rt << 1 | 1] += Add[rt];
+		Sum[rt << 1] += Add[rt] * ln;
+		Sum[rt << 1 | 1] += Add[rt] * rn;
+		Add[rt] = 0;
+	}
+}
+void Update(int L,int R,int C,int l,int r,int rt)//区间修改  A[L,R]+C
+{
+	if (L <= l && R >= r)
+	{
+		Sum[rt] += C * (r - l + 1);
+		Add[rt] += C;
+		return;
+	}
+	int m = (l + r) >> 1;
+	PushDown(rt, m - l + 1, r - m);
+	if (L <= m) Update(L,R,C,l,m,rt<<1);
+	if (R > m) Update(L,R,C,m+1,r,rt<<1|1);
+	PushUp(rt);
+}
+int query()//Update()在边界不会下推，所以在查询边界以下区间节点时会得到不正确的Sum
+{}
+
+int main()
+{
+	scanf("%d",&n);
+	for (int i = 1; i <= n; i++)
+	{
+		scanf("%d",&a[i]);
+	}
+	Build(1,8,1);
+	Update(2, 8, 1, 1, 8,1);
+	for(int i=1;i<=15;i++)
+	printf("%d %d\n",Sum[i],Add[i]);
+    //std::cout << "Hello World!\n"; 
+}
